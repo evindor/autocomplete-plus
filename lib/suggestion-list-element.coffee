@@ -28,6 +28,10 @@ class SuggestionListElement extends HTMLElement
     @subscriptions.add(@model.onDidSelectPrevious(@moveSelectionUp.bind(this)))
     @subscriptions.add(@model.onDidConfirmSelection(@confirmSelection.bind(this)))
     @subscriptions.add(@model.onDidDispose(@dispose.bind(this)))
+    @subscriptions.add atom.keymap.onDidFailToMatchBinding (keystrokes) =>
+      if atom.config.get('autocomplete-plus.typingConfirmsSelection')
+        unless @selectedIndex is 0
+          @confirmSelection(keystrokes)
     this
 
   # This should be unnecessary but the events we need to override
@@ -84,11 +88,11 @@ class SuggestionListElement extends HTMLElement
 
   # Private: Confirms the currently selected item or cancels the list view
   # if no item has been selected
-  confirmSelection: ->
+  confirmSelection: (keystroke)->
     return unless @model.isActive()
     item = @getSelectedItem()
     if item?
-      @model.confirm(item)
+      @model.confirm(item, keystroke)
     else
       @model.cancel()
 
